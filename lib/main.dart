@@ -23,7 +23,8 @@ class MyApp extends StatelessWidget {
               title: TextStyle(
                   fontFamily: 'OpenSans',
                   fontWeight: FontWeight.bold,
-                  fontSize: 18)),
+                  fontSize: 18),
+              button: TextStyle(color: Colors.white)),
           appBarTheme: AppBarTheme(
               textTheme: ThemeData.light().textTheme.copyWith(
                     title: TextStyle(
@@ -53,19 +54,28 @@ class _MyHomePageState extends State<MyHomePage> {
   ];
 
   List<Transaction> get _recentTransactions {
-    return _userTransactions.where((element) =>
-        element.date.isAfter(DateTime.now().subtract(Duration(days: 7)))).toList();
+    return _userTransactions
+        .where((element) =>
+            element.date.isAfter(DateTime.now().subtract(Duration(days: 7))))
+        .toList();
   }
 
-  void _addTransaction(String txTitle, double txAmount) {
+  void _addTransaction(String txTitle, double txAmount, DateTime chosenDate) {
     final newTx = new Transaction(
         id: DateTime.now().toString(),
         title: txTitle,
         amount: txAmount,
-        date: DateTime.now());
+        date: chosenDate);
     setState(() {
       _userTransactions.add(newTx);
     });
+  }
+
+  void _deleteTransaction(String id) {
+    setState(() {
+      _userTransactions.removeWhere((element) => element.id == id);
+    });
+    ;
   }
 
   void _startNewAddTransaction(BuildContext ctx) {
@@ -87,12 +97,14 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: () => _startNewAddTransaction(context))
         ],
       ),
-      body: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            Chart(_userTransactions),
-            TransactionList(_recentTransactions),
-          ]),
+      body: SingleChildScrollView(
+        child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Chart(_userTransactions),
+              TransactionList(_recentTransactions, _deleteTransaction),
+            ]),
+      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
